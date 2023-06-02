@@ -1,0 +1,121 @@
+scalar JSON
+
+type Query {
+    helloWorld: String
+    helloName(name: String!): String
+
+    who: String
+
+    users: [User!]!
+
+    games: [Game!]!
+    game(id: ID!): Game
+
+    player: Player!
+    players: [Player!]!
+    ships: [Ship!]!
+
+    isStarted: Boolean!
+    gameState: Status!
+}
+
+type Status{
+    gameOver: Boolean
+    playerWon: Boolean
+}
+
+type User {
+    id: ID!
+    email: String
+    numberOfWins: Int
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+
+type Game {
+    id: ID!
+    Open: Boolean
+    Started: Boolean
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    players: [Player!]!
+}
+
+type Player {
+    id: ID!
+    host: Boolean
+    UserId: Int
+    GameId: Int
+
+    ShipsPlaced: Boolean
+    Active: Boolean
+    Defeated: Boolean
+
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Ship {
+  id: ID!
+  PlayerId: Int
+  type: Int
+  
+  x1: Int
+  y1: Int
+  x2: Int
+  y2: Int
+  x3: Int
+  y3: Int
+  x4: Int
+  y4: Int
+  x5: Int
+  y5: Int
+  
+  h1: Boolean
+  h2: Boolean
+  h3: Boolean
+  h4: Boolean
+  h5: Boolean
+}
+
+ input LoginInput {
+    email: String!
+    password: String!
+  }
+
+ input RegisterInput {
+  email: String!
+  password: String!
+}
+
+  type AuthPayload {
+    token: String!
+  }
+
+  type GamePayload {
+    game: Game!
+    player: Player!
+  }
+
+  type ShipPlacementPayload {
+    player: Player!
+    gameStarted: Boolean
+  }
+
+  type AttackResult {
+    hit: Boolean
+    defeated: Boolean
+  }
+
+  type Mutation {
+    login(input: LoginInput!): AuthPayload 
+    registration(input: RegisterInput!): AuthPayload
+    placeShips(input: JSON!): ShipPlacementPayload
+    createGame: GamePayload!
+    joinGame(id: ID!): GamePayload!
+    createPlayer(host: Boolean!): Player!
+    attack(x:Int!,y:Int!): AttackResult!
+  }
+
+
