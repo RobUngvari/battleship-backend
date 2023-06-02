@@ -47,9 +47,6 @@ const validateShips = (jsonInput) => {
 
 module.exports = {
     Query: {
-        helloWorld: () => "Hello World!",
-        helloName: (_, { name }) => `Hello ${name}!`,
-
         who: auth(async (_parent, _params, context) => await context.user.email),
         users: async () => await User.findAll(),
 
@@ -103,6 +100,12 @@ module.exports = {
         players: async (game) => await game.getPlayers(),
       },
     Mutation: {
+
+        changeHello: async (_, { message }, { pubsub }) => { // subs
+          await pubsub.publish({ topic: 'HELLO', payload: { newHello: message } });
+          return message;
+        },
+
         login: async (_, { input }) => {
             const { email, password } = input;
             const user = await User.findOne({ where: { email } });
@@ -375,6 +378,14 @@ module.exports = {
             return playerId;
           })
           
+    },
+    Subscription: {
+      newHello: {
+        subscribe: (root, args, { pubsub }) => pubsub.subscribe('HELLO'),
+      },
+      listenRival: {
+        subscribe: (root, args, { pubsub }) => pubsub.subscribe('ECHO'),
+      },
     },
     
 };

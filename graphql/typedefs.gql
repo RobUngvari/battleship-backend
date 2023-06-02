@@ -1,20 +1,13 @@
 scalar JSON
 
 type Query {
-    helloWorld: String
-    helloName(name: String!): String
-
     who: String
-
     users: [User!]!
-
     games: [Game!]!
     game(id: ID!): Game
-
     player: Player!
     players: [Player!]!
     ships: [Ship!]!
-
     isStarted: Boolean!
     gameState: Status!
 }
@@ -109,6 +102,7 @@ type Ship {
   }
 
   type Mutation {
+    changeHello(message: String!): String
     login(input: LoginInput!): AuthPayload 
     registration(input: RegisterInput!): AuthPayload
     placeShips(input: JSON!): ShipPlacementPayload
@@ -118,6 +112,11 @@ type Ship {
     attack(x:Int!,y:Int!): AttackResult!
     closeGame: ID!
     clearPlayer: ID!
+  }
+
+  type Subscription {
+    newHello: String
+    listenRival: String
   }
 
 

@@ -10,6 +10,10 @@ const schema = makeExecutableSchema({
     resolvers: [graphQLScalars.resolvers, require(join(__dirname, "resolvers"))],
 });
 
+
+// const { PubSub } = require('mercurius'); // subs
+// const pubsub = new PubSub(); // subs
+
 // A fastify-hez érkezett kérést berakjuk a context-be
 const context = (request) => {
     return {
@@ -21,6 +25,7 @@ module.exports = (fastify) => {
     fastify.register(mercurius, {
         graphiql: true,
         schema,
-        context: (request) => {return {request}},
+        context: (request) => {return {request}}, // subs
+        subscription: true, // subs
     });
 };
