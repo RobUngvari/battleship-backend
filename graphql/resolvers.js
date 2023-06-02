@@ -8,8 +8,6 @@ const jwt = require('jsonwebtoken');
 const { is } = require("superstruct");
 const secret = process.env.JWT_SECRET || 'secret';
 
-// TODO jwt secret
-
 const validateShips = (jsonInput) => {
   // let benchmark = {2:2,3:2,4:1,5:1}
   let benchmark = {2:2} // TODO switch to above
@@ -58,7 +56,7 @@ module.exports = {
         games: async () => await Game.findAll(),
         game: async (_, { id }) => await Game.findByPk(id),
 
-        players: async () => await Player.findAll(), // TODO: auth
+        players: auth(async (_,__,context) => await Player.findAll()),
 
         player: auth( async (_, _params, context) => {
           const loggedInUser = await context.user.id;          
@@ -121,8 +119,6 @@ module.exports = {
             return { token };
         },
         registration: async (_, { input }) => {
-
-          // TODO client sends hashed string
           const { email, password } = input;
   
           // Check for existing user
@@ -132,12 +128,12 @@ module.exports = {
           }
   
           // Hash password
-          const hashedPassword = await bcrypt.hash(password, 10);
+          // const hashedPassword = await bcrypt.hash(password, 10);
   
           // Create user
           const user = await User.create({
               email,
-              password: hashedPassword,
+              password: password,
               numberOfWins: 0
           });
   
@@ -146,8 +142,6 @@ module.exports = {
           return { token };
         },
         attack: auth( async (_, { x, y }, context) => {
-          // TODO only if active and game is not over and started
-
           const loggedInUser = await context.user.id;          
           const player = await Player.findOne({ where: { UserId: loggedInUser } })
           const game = await player.getGame()
@@ -219,21 +213,7 @@ module.exports = {
 
             const loggedInUser = await context.user.id;          
             const player = await Player.findOne({ where: { UserId: loggedInUser } })
-            // const loggedUserPlayerId = players[0].id;
-
-            // const game = await player.getGame()
-            // const gamePlayers = await game.getPlayers()
-            // const [rival] = gamePlayers.filter(z => z.id != player.id)
-
-
-            // const loggedInUser = await context.user.id;
-            //  console.log(await User.findByPk(loggedInUser))
-
-            // TODO get player directly -> 
-            // const players = await (await User.findByPk(loggedInUser)).getPlayers()
-
-            // const loggedUserPlayerId = players[0].id;
-            // const player = await Player.findByPk(loggedUserPlayerId);
+  
             if (!player) {
               throw new Error('Player not found.');
             }
@@ -267,7 +247,6 @@ module.exports = {
             player.ShipsPlaced = true;
             await player.save();
 
-            // TODO check if game can be set to started
             const game = await player.getGame()
             const gamePlayers = await game.getPlayers()
             const [rival] = gamePlayers.filter(z => z.id != player.id)
@@ -303,8 +282,12 @@ module.exports = {
               }
           }),
           createGame: auth( async (_, _params, context) => {
-            // TODO user to only one game
             const loggedInUser = await context.user.id;
+            let playerCheck = await Player.findOne({ where: { UserId: loggedInUser } });
+
+            if (!playerCheck){
+              throw new Error('User already in a game.');
+            }
 
             try {
                 // init game
@@ -321,18 +304,25 @@ module.exports = {
                   player: hostPlayer
                 };
               } catch (err) {
-                console.error(err);
                 throw new Error('Failed to create game.');
               }
           }),
           joinGame: auth( async (_, {id}, context) => {
-            // TODO user to only one game
             const loggedInUser = await context.user.id;
+            let playerCheck = await Player.findOne({ where: { UserId: loggedInUser } });
+            if (!playerCheck){
+              throw new Error('User already in a game.');
+            }
+
             const game = await Game.findByPk(id);
             
             let numberOfPlayers = await game.countPlayers();
             let isOpen = await game.Open;
-            // TODO check it is another player then host
+            
+            const [rival] = await game.getPlayers()
+            if (rival.UserId === loggedInUser){
+              throw new Error('Host of the game is the same user.');
+            }
 
             try {
                 
@@ -351,7 +341,6 @@ module.exports = {
                 return null;
 
               } catch (err) {
-                console.error(err);
                 throw new Error('Failed to join game.');
               }
           }),
@@ -373,6 +362,17 @@ module.exports = {
             const gameID = await game.id;
             game.destroy();
             return gameID
+          }), 
+          clearPlayer: auth( async (_, __, context) => {
+            const loggedInUser = await context.user.id;          
+            const player = await Player.findOne({ where: { UserId: loggedInUser } })
+            const game = await player.getGame()
+            if (game){
+              throw new Error('Unable to delete player, first delete game.');
+            }
+            const playerId = await player.id;
+            player.destroy();
+            return playerId;
           })
           
     },

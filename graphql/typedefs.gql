@@ -117,6 +117,7 @@ type Ship {
     createPlayer(host: Boolean!): Player!
     attack(x:Int!,y:Int!): AttackResult!
     closeGame: ID!
+    clearPlayer: ID!
   }
 
 
