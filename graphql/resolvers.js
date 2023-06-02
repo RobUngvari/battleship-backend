@@ -217,14 +217,23 @@ module.exports = {
         placeShips: auth( async (_, { input }, context) => {
             parsedInput = JSON.parse(input);
 
-            const loggedInUser = await context.user.id;
+            const loggedInUser = await context.user.id;          
+            const player = await Player.findOne({ where: { UserId: loggedInUser } })
+            // const loggedUserPlayerId = players[0].id;
+
+            // const game = await player.getGame()
+            // const gamePlayers = await game.getPlayers()
+            // const [rival] = gamePlayers.filter(z => z.id != player.id)
+
+
+            // const loggedInUser = await context.user.id;
             //  console.log(await User.findByPk(loggedInUser))
 
             // TODO get player directly -> 
-            const players = await (await User.findByPk(loggedInUser)).getPlayers()
+            // const players = await (await User.findByPk(loggedInUser)).getPlayers()
 
-            const loggedUserPlayerId = players[0].id;
-            const player = await Player.findByPk(loggedUserPlayerId);
+            // const loggedUserPlayerId = players[0].id;
+            // const player = await Player.findByPk(loggedUserPlayerId);
             if (!player) {
               throw new Error('Player not found.');
             }
@@ -345,7 +354,27 @@ module.exports = {
                 console.error(err);
                 throw new Error('Failed to join game.');
               }
+          }),
+          closeGame: auth( async (_, __, context) => {
+            const loggedInUser = await context.user.id;          
+            const player = await Player.findOne({ where: { UserId: loggedInUser } })
+            const game = await player.getGame()
+            const gamePlayers = await game.getPlayers()
+
+            for (let playerIndex in gamePlayers){
+              let playerSelected = gamePlayers[playerIndex];
+              let playerShips = await playerSelected.getShips();
+              for (let shipIndex in playerShips){
+                let shipSelected = playerShips[shipIndex];
+                shipSelected.destroy();
+              }
+              playerSelected.destroy();
+            }
+            const gameID = await game.id;
+            game.destroy();
+            return gameID
           })
+          
     },
     
 };

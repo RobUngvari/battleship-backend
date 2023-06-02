@@ -239,7 +239,14 @@ query {
   isStarted
 }
 
-createGame[M][A] -> joinGame[M][B] -> placeShips[M][A+B] -> isStarted[Q] [TBD] -> attack[M][A+B] -> isOver[Q] [TBD] 
+createGame[M][A] -> 
+joinGame[M][B] -> 
+placeShips[M][A+B] -> 
+isStarted[Q] [TBD] -> 
+attack[M][A+B] -> 
+player[Q] [TBD] 
+gameState[Q] [TBD] 
+closeGame[M] 
 
 query {
   player {
@@ -262,4 +269,8 @@ query {
     gameOver,
     playerWon
   }
+}
+
+mutation {
+  closeGame
 }
