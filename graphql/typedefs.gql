@@ -129,6 +129,7 @@ type ListenPayload {
     newHello: String
     listenRival(gameId:String!): ListenPayload
     listenJoin(gameId:String!): ListenPayload
+    listenStart(gameId:String!): ListenPayload
   }
 
 

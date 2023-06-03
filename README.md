@@ -1,103 +1,65 @@
 # battleship-backend
  Battleship Game with Graphql Backend
 
-TODO test és route mappával kezdeni valamit
+## Game steps in terms of endpoints
 
-npm init -y
+I.   player A calls createGame[M]<br />
+II.  player B joins above mentioned game by joinGame[M]<br />
+III. player A and B places their ships by placeShips[M]<br />
+IV.  players can check if both party placed their ships isStarted[Q]<br />
+V.   each play can attack in turn based way by attack[M]<br />
+VI.  player can check if game is over by gameState[Q]<br />
+VII. after game ended one player's client should clear the game instances by closeGame[M]<br />
 
-npm i sequelize
+Also subscriptions present and described later on. A and B players's clients in the turn based manner can wait for the other player and subscribe to published informations from server.
 
-npm install --save-dev sequelize-cli
+# Authentication
+## Registration
 
-npm install -g sequelize-cli
+This query string returns bcrypt token, which will be used for authentication.
 
-npm install --save graphql
+```
+mutation {
+  register(input: {
+    email: "user@example.com", 
+    password: "securePassword", 
+  }) {
+    token
+  }
+}
+```
 
-npm i fastify
+## Login
 
-npm i mercurius
+```
+mutation {
+  login(input: {email: "admin@fullstack.hu", password: "labbo"}) {
+    token
+  }
+}
+```
+After login token should be send in header examples below:
 
-npm i sqlite3
+Admin1 token
+```
+{
+  "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbjFAYmF0dGxlc2hpcC5jb20iLCJwYXNzd29yZCI6IiQyYiQxMCRwS0tCU0RrQnJkY01GRUp2bTB0WlRlelNQTGNlbVBwZVJaSmczU2VER3FTQUxZMlZaRkw4eSIsIm51bWJlck9mV2lucyI6MiwiY3JlYXRlZEF0IjoiMjAyMy0wNi0wMVQyMjowMToxOS4xMDBaIiwidXBkYXRlZEF0IjoiMjAyMy0wNi0wMVQyMjowMToxOS4xMDBaIiwiaWF0IjoxNjg1NjU2OTY3fQ.Lr4PdT523bR1E9WyCBcocX6jKyNRoHkcCjMrj_GDNuw"
+}
+```
 
-npm i bcrypt
+Admin2 token
+```
+{
+  "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJhZG1pbjJAYmF0dGxlc2hpcC5jb20iLCJwYXNzd29yZCI6IiQyYiQxMCROWWVZUlFTaXpyMVU3UzVhemF3REF1a3d6akJ5UVQ1WlVRNjRKbTJ4Ynhob3FjVUlpTTF5cSIsIm51bWJlck9mV2lucyI6MiwiY3JlYXRlZEF0IjoiMjAyMy0wNi0wMVQyMjowMToxOS4xNzJaIiwidXBkYXRlZEF0IjoiMjAyMy0wNi0wMVQyMjowMToxOS4xNzJaIiwiaWF0IjoxNjg1NjU2OTk0fQ.hg991J1_hsiUlR0Nchdh3wR3iI5uZ3bGTuJpc5_rtdM"
+}
+```
 
-npm i rimraf
+# Game
 
-npm i @faker-js/faker
+## General queries
+### Checking list of open games
 
-sequelize init
-
-"db": "npx rimraf database/database.sqlite && npx sequelize db:migrate --debug && npx sequelize db:seed:all --debug",
-
-
-
-https://github.com/szerveroldali/2021-22-2/blob/main/restapi_zh_maj11.md
-
-download rest starting pack
-
-npm i
--- npm i rimraf -- ez csak akkor ha nincs benne a kezdőcsomagban
--- de amúgyis a kezdőcsomagot használd, ne buziskodj
-
-npx sequelize model:generate --name User --attributes email:string
--- seederbe beírni, hogy milyen adatoakt akarunk seedelni
-
-npm run db
-npx sequelize seed:generate  --name DataBaseSeeder
-
-npx sequelize model:generate --name Playlist --attributes title:string,private:boolean,UserId:integer
--- seederbe beírni, hogy milyen adatoakt akarunk seedelni
--- modelsben beírni a relációkat pl this.hasMany(models.Playlist)
--- help: https://github.com/szerveroldali/2021-22-1/blob/main/SequelizeAssociations.md
-
-npx sequelize model:generate --name Track --attributes title:string,length:integer,author:string,genres:string,album:string,url:string
--- seederbe beírni, hogy milyen adatoakt akarunk seedelni
--- modelsben beírni a relációkat pl this.hasMany(models.Playlist)
--- help: https://github.com/szerveroldali/2021-22-1/blob/main/SequelizeAssociations.md
-
--- a relációk a node konzolos cuccban így tesztelhetőek
--- node
--- let u = await User.findByPk(2)
--- await u.getPlaylists()
--- .exit
-
--- many to many kapcsolathoz
-npx sequelize migration:generate --name create-playlist-track
--- abba a migrációba berakod az előre megírt szart és átnevezgeted jól
--- seederbe megcsinálni a relációkat
-
-
-npx sequelize model:generate --name User --attributes email:string,numberOfWins:integer
-npx sequelize model:generate --name Game --attributes private:boolean
-npx sequelize model:generate --name Player --attributes role:integer,UserId:integer,GameId:integer
-// playerbe kellenek az attribok
-
-npx sequelize model:generate --name Ship --attributes type:integer,x1:integer,y1:integer,h1:boolean,x2:integer,y2:integer,h2:boolean,x3:integer,y3:integer,h3:boolean,x4:integer,y4:integer,h4:boolean,x5:integer,y5:integer,h5:boolean,PlayerId:integer
-
-npm run db
-npx sequelize seed:generate --name DataBaseSeeder
-
-User:
-User.associate = (models) => {
-  User.belongsToMany(models.Game, { through: 'Player', foreignKey: 'UserId' });
-};
-
-Game:
-
-Game.associate = (models) => {
-  Game.belongsToMany(models.User, { through: 'Player', foreignKey: 'GameId' });
-};
-
-
-Player:
-
-Player.associate = (models) => {
-  Player.belongsTo(models.User, { foreignKey: 'UserId' });
-  Player.belongsTo(models.Game, { foreignKey: 'GameId' });
-};
-
-
-
+```
 query{
   games {
     id,
@@ -105,14 +67,22 @@ query{
 
   }
 }
+```
 
+## Checking game by known id
+
+```
 query{
   game(id:1) {
     id,
     players{id, host}
   } 
 }
+```
 
+## Checking players auth needed
+
+```
 query{
   players {
     id,
@@ -121,31 +91,27 @@ query{
 
   }
 }
+```
+## Checking currently logged in user.
 
-
-mutation {
-  login(input: {email: "Arvid_Heathcote@gmail.com"}) {
-    token
-  }
-}
-
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJBcnZpZF9IZWF0aGNvdGVAZ21haWwuY29tIiwibnVtYmVyT2ZXaW5zIjoyLCJjcmVhdGVkQXQiOiIyMDIzLTA1LTI2VDIxOjE4OjU1Ljc5MVoiLCJ1cGRhdGVkQXQiOiIyMDIzLTA1LTI2VDIxOjE4OjU1Ljc5MVoiLCJpYXQiOjE2ODUxOTUxMTh9.v9XGDowTayW9eazD5eAXaTNzz8QGgRdzP9ejdIFS7oo
-
-Header:
-{
-  "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbkBmdWxsc3RhY2suaHUiLCJwYXNzd29yZCI6IiQyYiQxMCRRYUhPWmJzYjJzbnRrdTQuRWFDOHV1TElNVEZrWDMxSWdlUEN1alFXdE5qYXdPdkRsMWs2ZSIsIm51bWJlck9mV2lucyI6MSwiY3JlYXRlZEF0IjoiMjAyMy0wNS0yN1QxODo1OToxNy40MjBaIiwidXBkYXRlZEF0IjoiMjAyMy0wNS0yN1QxODo1OToxNy40MjBaIiwiaWF0IjoxNjg1MjE0MDIxfQ.cr5fxIgywAEvYWhNuBe4R-f04QNkcScMQ97CpMEbnxE"
-}
-
-mutation {
-  login(input: {email: "admin@fullstack.hu", password: "labbo"}) {
-    token
-  }
-}
-
+```
 query {
   who
 }
+```
 
+## Create player (not used).
+```
+mutation {
+  createPlayer(host:true){
+    id
+  }
+}
+```
+
+## In game player wants to check it's own ships:
+
+```
 query{
   ships {
     id
@@ -170,32 +136,65 @@ query{
     h5
   }
 }
+```
 
-mutation {
-  createPlayer(host:true){
-    id
-  }
-}
+This query results in a response like this:
 
-
-
-
-
-mutation {
-  register(input: {
-    email: "user@example.com", 
-    password: "securePassword", 
-  }) {
-    token
-  }
-}
-
-Admin1 then Admin2
-
+```
 {
-  "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwiZW1haWwiOiJhZG1pbjFAYmF0dGxlc2hpcC5jb20iLCJwYXNzd29yZCI6IiQyYiQxMCRwS0tCU0RrQnJkY01GRUp2bTB0WlRlelNQTGNlbVBwZVJaSmczU2VER3FTQUxZMlZaRkw4eSIsIm51bWJlck9mV2lucyI6MiwiY3JlYXRlZEF0IjoiMjAyMy0wNi0wMVQyMjowMToxOS4xMDBaIiwidXBkYXRlZEF0IjoiMjAyMy0wNi0wMVQyMjowMToxOS4xMDBaIiwiaWF0IjoxNjg1NjU2OTY3fQ.Lr4PdT523bR1E9WyCBcocX6jKyNRoHkcCjMrj_GDNuw"
+  "data": {
+    "ships": [
+      {
+        "id": "31",
+        "PlayerId": 24,
+        "type": 2,
+        "x1": 1,
+        "y1": 2,
+        "x2": 2,
+        "y2": 2,
+        "x3": null,
+        "y3": null,
+        "x4": null,
+        "y4": null,
+        "x5": null,
+        "y5": null,
+        "h1": true,
+        "h2": false,
+        "h3": null,
+        "h4": null,
+        "h5": null
+      },
+      {
+        "id": "32",
+        "PlayerId": 24,
+        "type": 2,
+        "x1": 8,
+        "y1": 8,
+        "x2": 6,
+        "y2": 6,
+        "x3": null,
+        "y3": null,
+        "x4": null,
+        "y4": null,
+        "x5": null,
+        "y5": null,
+        "h1": false,
+        "h2": false,
+        "h3": null,
+        "h4": null,
+        "h5": null
+      }
+    ]
+  }
 }
+```
 
+## Game logic related queries
+
+### 1a. User creates game 
+Also gets a player instance and a game instance. Game instance is in Open = true and Started = false and Over = false. Game responds its ID which will be unique to this game and basis of all communication.
+
+```
 mutation {
   createGame {
     game {
@@ -207,11 +206,34 @@ mutation {
     }
   }
 }
+```
 
-{
-  "Authorization" : "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJhZG1pbjJAYmF0dGxlc2hpcC5jb20iLCJwYXNzd29yZCI6IiQyYiQxMCROWWVZUlFTaXpyMVU3UzVhemF3REF1a3d6akJ5UVQ1WlVRNjRKbTJ4Ynhob3FjVUlpTTF5cSIsIm51bWJlck9mV2lucyI6MiwiY3JlYXRlZEF0IjoiMjAyMy0wNi0wMVQyMjowMToxOS4xNzJaIiwidXBkYXRlZEF0IjoiMjAyMy0wNi0wMVQyMjowMToxOS4xNzJaIiwiaWF0IjoxNjg1NjU2OTk0fQ.hg991J1_hsiUlR0Nchdh3wR3iI5uZ3bGTuJpc5_rtdM"
+After player created game it can start a subscription and listen for other users to join. Game id should be provided as string between quotes.
+
+```
+subscription {
+  listenJoin(gameId: "2") {
+    message
+  }
 }
+```
 
+If another player joined the server send a message to client who subsribed:
+
+```
+{
+  "data": {
+    "listenJoin": {
+      "message": "Another player joined."
+    }
+  }
+}
+```
+
+### 1b. User joins game by a known game ID.
+From list page or directly by the id - should be provided as integer in mutation query as below:
+
+```
 mutation {
   joinGame(id:2) {
     game {
@@ -223,7 +245,16 @@ mutation {
     }
   }
 }
+```
 
+### 2. Both player now should upload their ship coord.
+Below are the required. Please not that example has fewer ships then required.
+2 - 2 pcs 
+3 - 2 pcs
+4 - 1 pc
+5 - 1 pc
+
+```
 mutation {
   placeShips(
     input: "[{\"type\": 2, \"x1\": 1, \"y1\": 2, \"x2\": 2, \"y2\": 2}, {\"type\": 2, \"x1\": 8, \"y1\": 8, \"x2\": 6, \"y2\": 6}]"
@@ -234,20 +265,66 @@ mutation {
     gameStarted 
   }
 }
+```
 
+After player uploaded it should get the following response:
+
+```
+{
+  "data": {
+    "placeShips": {
+      "player": {
+        "id": "2"
+      },
+      "gameStarted": false
+    }
+  }
+}
+```
+gameStarted value is false until both players ships are set. When it is set the ship position are not anymore mutable, and the second part of the game, the attacking starts.
+
+Also if first player is placed ships and got gameStarted = false, then it is advised to subscribe to the event of the other player's ship upload:
+
+```
+subscription {
+  listenStart(gameId: "2"){
+    message
+  }
+}
+```
+
+When the other player is done placing it triggers this response:
+
+```
+{
+  "data": {
+    "listenStart": {
+      "message": "Other player's ships are placed."
+    }
+  }
+}
+```
+
+With the following query players can check if game is in started state or not:
+
+```
 query {
   isStarted
 }
+```
 
-createGame[M][A] -> 
-joinGame[M][B] -> 
-placeShips[M][A+B] -> 
-isStarted[Q] [TBD] -> 
-attack[M][A+B] -> 
-player[Q] [TBD] 
-gameState[Q] [TBD] 
-closeGame[M] 
+example response:
+```
+{
+  "data": {
+    "isStarted": false
+  }
+}
+```
+### 3. Main part of game.
+Turn based part of gaming starts. Each player can check their status:
 
+```
 query {
   player {
     id
@@ -256,42 +333,116 @@ query {
     Defeated
   }
 }
+```
 
+It retrives a json like below. If Active is true then it is the current player's turn to attack. ShipsPlaced should be true since it is done in previous step. Defeated mean this player lost all of it's ships.
+
+```
+{
+  "data": {
+    "player": {
+      "id": "23",
+      "ShipsPlaced": true,
+      "Active": true,
+      "Defeated": false
+    }
+  }
+}
+```
+Active player able to attack in the following format below. x and y are coordinates from 1 to 10.
+
+```
 mutation {
   attack(x:1, y:2){
     hit
     defeated
   }
 }
+```
 
+Attack response:
+
+```
+{
+  "data": {
+    "attack": {
+      "hit": true,
+      "defeated": false
+    }
+  }
+}
+```
+Here hit true means player hit one part of the rival player's ship. Defeated means that rivals all ships are destroyed.
+
+Attacking automatically makes the current player inactive and the other player active. Here again the inactive player can subscribe to event to wait for the other player's attack.
+
+```
+subscription {
+  listenRival(gameId: "2"){
+    message
+  }
+}
+```
+
+This subscription results in the below json if the other player attacked:
+
+```
+{
+  "data": {
+    "listenRival": {
+      "message": "Rival attacked."
+    }
+  }
+}
+```
+After every attack befor the player initialize another attack the client should query the game status.
+
+```
 query {
   gameState{
     gameOver,
     playerWon
   }
 }
+```
 
+It results a response like below:
+```
+{
+  "data": {
+    "gameState": {
+      "gameOver": false,
+      "playerWon": false
+    }
+  }
+}
+```
+Only valid if gameOver is true, then playerWon field means player win in case of true, loss in case of false. gameOver flag means that all of the ships of one player is destroyed.
+
+### 4. Closing game
+
+After the game is ended the game instance and corresponding players and ships should be removed from database. Users and players are different entites. So only the player wrapping of user is destroyed which is associated with the game object. The below mutation does the trick:
+
+```
 mutation {
   closeGame
 }
+```
+In case of game is closed but for some reason Player instance of user still exsits - block user to join another game - then we can call:
 
 
-****
-
+```
 mutation {
-  changeHello(message: "Hello from mutation!")
+  clearPlayer
 }
+```
 
-subscription {
-  newHello
-}
 
-subscription {
-  listenRival(gameId: "4")
-}
 
-subscription {
-  listenJoin(gameId: "8") {
-    message
-  }
-}
+
+
+
+
+
+
+

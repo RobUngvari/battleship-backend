@@ -216,8 +216,7 @@ module.exports = {
           }
 
         }),
-        placeShips: auth( async (_, { input }, context) => {
-          // TODO add pubsub
+        placeShips: auth( async (_, { input }, { request:context, pubsub }) => {
             parsedInput = JSON.parse(input);
 
             const loggedInUser = await context.user.id;          
@@ -267,6 +266,9 @@ module.exports = {
               await game.save();
               await rival.save();
             }
+
+            await pubsub.publish({ topic: game.id.toString(), 
+              payload: { message: "Other player's ships are placed." } });
 
             return {
               player : player,
@@ -401,6 +403,13 @@ module.exports = {
         resolve: (payload) => payload, //.listenRival,
       },
       listenJoin: {
+        subscribe: async (root, { gameId }, { pubsub }) => {
+            // Subscribe to the subscription topic corresponding to the game ID
+            return await pubsub.subscribe(gameId);
+        },
+        resolve: (payload) => payload,// .listenJoin,
+      },
+      listenStart: {
         subscribe: async (root, { gameId }, { pubsub }) => {
             // Subscribe to the subscription topic corresponding to the game ID
             return await pubsub.subscribe(gameId);
