@@ -4,12 +4,16 @@
 ## Game steps in terms of endpoints
 
 I.   player A calls createGame[M]<br />
-II.  player B joins above mentioned game by joinGame[M]<br />
-III. player A and B places their ships by placeShips[M]<br />
+II.  player B joins above mentioned game by joinGame[M][S]<br />
+III. player A and B places their ships by placeShips[M][S]<br />
 IV.  players can check if both party placed their ships isStarted[Q]<br />
-V.   each play can attack in turn based way by attack[M]<br />
+V.   each play can attack in turn based way by attack[M][S]<br />
 VI.  player can check if game is over by gameState[Q]<br />
 VII. after game ended one player's client should clear the game instances by closeGame[M]<br />
+
+M - mutation<br />
+Q - query<br />
+S - subsription for that event available<br />
 
 Also subscriptions present and described later on. A and B players's clients in the turn based manner can wait for the other player and subscribe to published informations from server.
 
@@ -249,10 +253,11 @@ mutation {
 
 ### 2. Both player now should upload their ship coord.
 Below are the required. Please not that example has fewer ships then required.
-2 - 2 pcs 
-3 - 2 pcs
-4 - 1 pc
-5 - 1 pc
+
+2 - 2 pcs <br />
+3 - 2 pcs<br />
+4 - 1 pc<br />
+5 - 1 pc<br />
 
 ```
 mutation {
