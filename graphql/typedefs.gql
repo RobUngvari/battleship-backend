@@ -114,9 +114,13 @@ type Ship {
     clearPlayer: ID!
   }
 
+type ListenRivalPayload {
+  message: String
+}
+
   type Subscription {
     newHello: String
-    listenRival: String
+    listenRival(gameId:ID!): ListenRivalPayload
   }
 
 

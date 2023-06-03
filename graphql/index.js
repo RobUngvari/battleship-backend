@@ -21,6 +21,7 @@ const context = (request) => {
     };
 };
 
+
 module.exports = (fastify) => {
     fastify.register(mercurius, {
         graphiql: true,
@@ -28,4 +29,5 @@ module.exports = (fastify) => {
         context: (request) => {return {request}}, // subs
         subscription: true, // subs
     });
+
 };

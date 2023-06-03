@@ -101,10 +101,10 @@ module.exports = {
       },
     Mutation: {
 
-        changeHello: async (_, { message }, { pubsub }) => { // subs
+        changeHello: auth( async (_, { message }, { context, pubsub }) => { // subs
           await pubsub.publish({ topic: 'HELLO', payload: { newHello: message } });
           return message;
-        },
+        }),
 
         login: async (_, { input }) => {
             const { email, password } = input;
@@ -144,7 +144,8 @@ module.exports = {
           const token = jwt.sign(user.toJSON(), 'secret');
           return { token };
         },
-        attack: auth( async (_, { x, y }, context) => {
+        attack: auth( async (_, { x, y }, {request:context, pubsub}) => {
+          // console.log(await context.user)
           const loggedInUser = await context.user.id;          
           const player = await Player.findOne({ where: { UserId: loggedInUser } })
           const game = await player.getGame()
@@ -204,6 +205,8 @@ module.exports = {
           await player.save();
           await rival.save();
           
+          await pubsub.publish({ topic: game.id.toString(), payload: { listenRival: "Change." } });
+          // await pubsub.publish(game.id.toString(), { listenRival: "Change." });
 
           return {
             hit: hit,
@@ -288,7 +291,7 @@ module.exports = {
             const loggedInUser = await context.user.id;
             let playerCheck = await Player.findOne({ where: { UserId: loggedInUser } });
 
-            if (!playerCheck){
+            if (playerCheck){
               throw new Error('User already in a game.');
             }
 
@@ -313,7 +316,7 @@ module.exports = {
           joinGame: auth( async (_, {id}, context) => {
             const loggedInUser = await context.user.id;
             let playerCheck = await Player.findOne({ where: { UserId: loggedInUser } });
-            if (!playerCheck){
+            if (playerCheck){
               throw new Error('User already in a game.');
             }
 
@@ -384,7 +387,11 @@ module.exports = {
         subscribe: (root, args, { pubsub }) => pubsub.subscribe('HELLO'),
       },
       listenRival: {
-        subscribe: (root, args, { pubsub }) => pubsub.subscribe('ECHO'),
+        subscribe: async (root, { gameId }, { pubsub }) => {
+            // Subscribe to the subscription topic corresponding to the game ID
+            return await pubsub.subscribe(gameId);
+        },
+        resolve: (payload) => payload.listenRival,
       },
     },
     

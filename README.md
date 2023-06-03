@@ -274,3 +274,18 @@ query {
 mutation {
   closeGame
 }
+
+
+****
+
+mutation {
+  changeHello(message: "Hello from mutation!")
+}
+
+subscription {
+  newHello
+}
+
+subscription {
+  listenRival(gameId: 4)
+}
