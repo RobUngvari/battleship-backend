@@ -205,7 +205,7 @@ module.exports = {
           await player.save();
           await rival.save();
           
-          await pubsub.publish({ topic: game.id.toString(), payload: { listenRival: "Change." } });
+          await pubsub.publish({ topic: game.id.toString(), payload: { listenRival: "Attacked." } });
           // await pubsub.publish(game.id.toString(), { listenRival: "Change." });
 
           return {
@@ -313,7 +313,7 @@ module.exports = {
                 throw new Error('Failed to create game.');
               }
           }),
-          joinGame: auth( async (_, {id}, context) => {
+          joinGame: auth( async (_, {id}, {request:context,pubsub}) => {
             const loggedInUser = await context.user.id;
             let playerCheck = await Player.findOne({ where: { UserId: loggedInUser } });
             if (playerCheck){
@@ -339,6 +339,7 @@ module.exports = {
                   game.Open = false;
                   await game.save();
 
+                  await pubsub.publish({ topic: game.id.toString(), payload: { listenJoin: "Joined." } });
                   return {
                     game: game,
                     player: secondPlayer
@@ -392,6 +393,13 @@ module.exports = {
             return await pubsub.subscribe(gameId);
         },
         resolve: (payload) => payload.listenRival,
+      },
+      listenJoin: {
+        subscribe: async (root, { gameId }, { pubsub }) => {
+            // Subscribe to the subscription topic corresponding to the game ID
+            return await pubsub.subscribe(gameId);
+        },
+        resolve: (payload) => payload.listenJoin,
       },
     },
     

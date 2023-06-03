@@ -289,3 +289,7 @@ subscription {
 subscription {
   listenRival(gameId: 4)
 }
+
+subscription {
+  listenJoin(gameId: 4)
+}

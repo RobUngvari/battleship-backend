@@ -118,9 +118,13 @@ type ListenRivalPayload {
   message: String
 }
 
+type ListenJoinPayload {
+  message: String
+}
   type Subscription {
     newHello: String
-    listenRival(gameId:ID!): ListenRivalPayload
+    listenRival(gameId:String!): ListenRivalPayload
+    listenJoin(gameId:String!): ListenJoinPayload
   }
 
 
