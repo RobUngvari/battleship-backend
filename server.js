@@ -1,3 +1,4 @@
+
 require("dotenv").config();
 const fastify = require("fastify")({
     logger: {
@@ -34,6 +35,25 @@ registerGraphQL(fastify);
 fastify.register(autoload, {
     dir: join(__dirname, "routes"),
 });
+
+
+// Enable CORS using Fastify's built-in plugin
+// fastify.register(require('fastify-cors'), {
+//   origin: 'http://localhost:4200', // Replace with your Angular app's domain
+//   methods: ['GET', 'POST', 'OPTIONS'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+// });
+
+// import Fastify from 'fastify'
+
+// import cors from '@fastify/cors'
+// const fast = require("@fastify/cors");
+// const fastify = Fastify()
+fastify.register(require('@fastify/cors'), {
+    origin: 'http://localhost:4200', // Replace with your Angular app's domain
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
 // App indítása a megadott porton
 fastify.listen({ port }, (err, address) => {

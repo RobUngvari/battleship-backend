@@ -36,14 +36,25 @@ module.exports = {
     }
 
     let game1 = await Game.create({open : true})
+    let game2 = await Game.create({open : true})
+
     let player1 = await Player.create({host : true})
     let player2 = await Player.create({host : false})
+
+    let player3 = await Player.create({host : true})
+    let player4 = await Player.create({host : false})
 
     await player1.setUser(users[5].id)
     await player2.setUser(users[6].id)
 
+    await player3.setUser(users[7].id)
+    await player4.setUser(users[8].id)
+
     await player1.setGame(game1.id)
     await player2.setGame(game1.id)
+
+    await player3.setGame(game2.id)
+    await player4.setGame(game2.id)
 
     
   },
