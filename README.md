@@ -287,9 +287,11 @@ subscription {
 }
 
 subscription {
-  listenRival(gameId: 4)
+  listenRival(gameId: "4")
 }
 
 subscription {
-  listenJoin(gameId: 4)
+  listenJoin(gameId: "8") {
+    message
+  }
 }

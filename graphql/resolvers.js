@@ -205,7 +205,9 @@ module.exports = {
           await player.save();
           await rival.save();
           
-          await pubsub.publish({ topic: game.id.toString(), payload: { listenRival: "Attacked." } });
+          await pubsub.publish({ topic: game.id.toString(), 
+            payload: { message: "Rival attacked." } });
+            // payload: { listenRival: "Attacked." } });
           // await pubsub.publish(game.id.toString(), { listenRival: "Change." });
 
           return {
@@ -215,6 +217,7 @@ module.exports = {
 
         }),
         placeShips: auth( async (_, { input }, context) => {
+          // TODO add pubsub
             parsedInput = JSON.parse(input);
 
             const loggedInUser = await context.user.id;          
@@ -339,7 +342,10 @@ module.exports = {
                   game.Open = false;
                   await game.save();
 
-                  await pubsub.publish({ topic: game.id.toString(), payload: { listenJoin: "Joined." } });
+                  await pubsub.publish({ topic: game.id.toString(), 
+                    payload: { message: "Another player joined." } });
+                    // payload: { listenJoin: "Joined." } });
+
                   return {
                     game: game,
                     player: secondPlayer
@@ -392,14 +398,14 @@ module.exports = {
             // Subscribe to the subscription topic corresponding to the game ID
             return await pubsub.subscribe(gameId);
         },
-        resolve: (payload) => payload.listenRival,
+        resolve: (payload) => payload, //.listenRival,
       },
       listenJoin: {
         subscribe: async (root, { gameId }, { pubsub }) => {
             // Subscribe to the subscription topic corresponding to the game ID
             return await pubsub.subscribe(gameId);
         },
-        resolve: (payload) => payload.listenJoin,
+        resolve: (payload) => payload,// .listenJoin,
       },
     },
     
